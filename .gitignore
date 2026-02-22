@@ -1,0 +1,8 @@
+node_modules
+instruction
+dist
+.env
+coverage
+.DS_Store
+*.log
+instruction.txt
