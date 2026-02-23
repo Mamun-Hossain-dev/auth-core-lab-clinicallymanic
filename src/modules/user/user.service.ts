@@ -28,15 +28,21 @@ const getAllUsers = async (
   const { page, limit, skip, sortBy, sortOrder } = pagination(paginationOptions)
 
   const andCondition: Record<string, unknown>[] = []
-  const searchFields = ['firstName', 'lastName', 'email', 'role']
 
   if (searchTerm) {
     andCondition.push({
-      $or: searchFields.map(field => ({
-        [field]: { $regex: searchTerm, $options: 'i' },
-      })),
+      $text: { $search: searchTerm },
     })
   }
+
+  // const searchFields = ['firstName', 'lastName', 'email', 'role']
+  // if (searchTerm) {
+  //   andCondition.push({
+  //     $or: searchFields.map(field => ({
+  //       [field]: { $regex: searchTerm, $options: 'i' },
+  //     })),
+  //   })
+  // }
 
   if (Object.keys(filterData).length) {
     andCondition.push({
@@ -50,7 +56,9 @@ const getAllUsers = async (
 
   const sortCondition: Record<string, 1 | -1> = {}
 
-  if (sortBy && sortOrder) {
+  if (searchTerm) {
+    sortCondition.score = { $meta: 'textScore' } as any
+  } else if (sortBy && sortOrder) {
     sortCondition[sortBy] = sortOrder === 'asc' ? 1 : -1
   }
 

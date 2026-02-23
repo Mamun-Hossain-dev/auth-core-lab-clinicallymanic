@@ -28,7 +28,7 @@ const registerUser = async (payload: RegisterPayloadInput) => {
 const loginUser = async (payload: LoginPayloadInput) => {
   const user = await User.findByEmail(payload.email)
   if (!user) {
-    throw new AppError(401, 'Invalid email or password')
+    throw new AppError(401, '')
   }
 
   const isPasswordValid = await user.isPasswordMatched(payload.password)
@@ -37,9 +37,9 @@ const loginUser = async (payload: LoginPayloadInput) => {
     throw new AppError(401, 'Invalid email or password')
   }
 
-  if (!user.verified) {
-    throw new AppError(403, 'Please verify your email to login')
-  }
+  // if (!user.verified) {
+  //   throw new AppError(403, 'Please verify your email to login')
+  // }
 
   const accessToken = jwtHelper.generateToken(
     {

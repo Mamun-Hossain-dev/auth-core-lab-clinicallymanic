@@ -55,6 +55,18 @@ const userSchema = new Schema<IUser>(
   }
 )
 
+// single index
+userSchema.index({ role: 1 })
+userSchema.index({ createdAt: -1 })
+
+// text index
+userSchema.index({
+  firstName: 'text',
+  lastName: 'text',
+  bio: 'text',
+  location: 'text',
+})
+
 userSchema.pre('save', async function () {
   if (this.isModified('password')) {
     this.password = await bcrypt.hash(this.password, Number(config.bcryptSaltRounds))

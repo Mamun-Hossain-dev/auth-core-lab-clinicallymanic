@@ -51,7 +51,7 @@ const uploadToCloudinary = (
 
     const stream = cloudinary.uploader.upload_stream(
       {
-        folder: `NodeExpressStarter/${resourceType}s`,
+        folder: `auth-core-lab-clinicallymanic/${resourceType}s`,
         resource_type: resourceType,
         public_id: safeFileName,
         ...(isVideo || isCSV
