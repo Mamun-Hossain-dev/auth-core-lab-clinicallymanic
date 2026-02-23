@@ -7,10 +7,17 @@ import {
   getUserParamZodSchema,
   updateUserZodSchema,
 } from './user.validation'
+import auth from '../../middlewares/auth'
+import { userRole } from './user.constants'
 
 const router = express.Router()
 
-router.post('/', validateRequest(createUserZodSchema), userController.createUser)
+router.post(
+  '/',
+  validateRequest(createUserZodSchema),
+  auth(userRole.admin),
+  userController.createUser
+)
 
 router.get('/:id', validateRequest(getUserParamZodSchema), userController.getUserById)
 
@@ -20,6 +27,7 @@ router.patch(
   '/:id',
   validateRequest(getUserParamZodSchema),
   validateRequest(updateUserZodSchema),
+  auth(userRole.admin, userRole.user),
   userController.updateUserById
 )
 
