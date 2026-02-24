@@ -16,7 +16,7 @@ export const bannerBaseSchema = z.object({
 })
 
 export const createBannerZodSchema = z.object({
-  body: bannerBaseSchema,
+  body: bannerBaseSchema.partial(),
 })
 
 export const updateBannerZodSchema = z.object({
@@ -26,6 +26,8 @@ export const updateBannerZodSchema = z.object({
       description: true,
       category: true,
       status: true,
+      bannerImageUrl: true,
+      bannerImagePublicId: true,
     })
     .partial(),
 })

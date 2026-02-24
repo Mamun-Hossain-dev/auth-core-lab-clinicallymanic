@@ -120,9 +120,12 @@ const updateUserById = async (
 }
 
 const deleteUserById = async (id: string) => {
-  const user = await User.findById(id)
+  const user = await User.findById(id).select('profileImagePublicId')
   if (!user) {
     throw new AppError(404, 'User not found')
+  }
+  if (user.profileImagePublicId) {
+    await fileUploader.deleteFromCloudinary(user.profileImagePublicId)
   }
   return await user.deleteOne()
 }

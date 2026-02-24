@@ -19,3 +19,9 @@ export interface Banner {
 export type CreateBannerInput = z.infer<typeof createBannerZodSchema>['body']
 export type UpdateBannerInput = z.infer<typeof updateBannerZodSchema>['body']
 export type GetAllBannerInput = z.infer<typeof getAllBannerQueryZodSchema>['query']
+
+export type BannerFilterOptions = Pick<GetAllBannerInput, 'searchTerm' | 'category' | 'status'>
+export type BannerPaginationOptions = Pick<
+  GetAllBannerInput,
+  'page' | 'limit' | 'sortBy' | 'sortOrder'
+>

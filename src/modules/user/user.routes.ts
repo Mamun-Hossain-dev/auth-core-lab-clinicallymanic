@@ -9,6 +9,7 @@ import {
 } from './user.validation'
 import auth from '../../middlewares/auth'
 import { userRole } from './user.constants'
+import { fileUploader } from '../../utils/fileUpload'
 
 const router = express.Router()
 
@@ -25,6 +26,9 @@ router.get('/', validateRequest(getAllUsersZodSchema), userController.getAllUser
 
 router.patch(
   '/:id',
+  auth(userRole.admin, userRole.user),
+  fileUploader.upload.single('profileImage'),
+  // fileUploader.upload.array("images", 5),
   validateRequest(getUserParamZodSchema),
   validateRequest(updateUserZodSchema),
   auth(userRole.admin, userRole.user),
