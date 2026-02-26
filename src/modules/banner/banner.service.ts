@@ -93,7 +93,10 @@ const getAllBanner = async (
   }
 
   const [result, total] = await Promise.all([
-    BannerModel.find(whereCondition).skip(skip).limit(limit).sort(sortCondition),
+    BannerModel.find(whereCondition)
+      .sort(sortCondition)
+      .skip(skip as number)
+      .limit(limit as number),
     BannerModel.countDocuments(whereCondition),
   ])
 

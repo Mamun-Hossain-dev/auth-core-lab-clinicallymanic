@@ -64,9 +64,9 @@ const getAllUsers = async (
 
   const [users, total] = await Promise.all([
     User.find(whereCondition)
+      .sort(sortCondition)
       .skip(skip as number)
-      .limit(limit as number)
-      .sort(sortCondition),
+      .limit(limit as number),
 
     User.countDocuments(whereCondition),
   ])

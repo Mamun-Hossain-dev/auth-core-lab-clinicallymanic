@@ -1,14 +1,24 @@
 import { Response } from 'express'
 
+type OffSetMeta = {
+  page: number
+  limit: number
+  total: number
+}
+
+type CursorMeta = {
+  limit: number
+  nextCursor?: string
+  prevCursor?: string
+  hasNextPage?: boolean
+  hasPrevPage?: boolean
+}
+
 type TResponse<T> = {
   statusCode: number
   success: boolean
   message?: string
-  meta?: {
-    page: number
-    limit: number
-    total: number
-  }
+  meta?: OffSetMeta | CursorMeta
   data?: T
 }
 

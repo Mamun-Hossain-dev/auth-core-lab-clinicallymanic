@@ -28,6 +28,7 @@ export const updateUserZodSchema = z.object({
       phone: true,
       location: true,
       profileImage: true,
+      profileImagePublicId: true,
     })
     .partial(),
 })

@@ -5,10 +5,10 @@ import z from 'zod'
 export const bannerBaseSchema = z.object({
   title: z.string().min(2, 'at least 2 characters'),
   description: z.string().min(5, 'at least 5 characters'),
-  bannerImageUrl: z.string().url().optional(),
-  bannerImagePublicId: z.string().optional(),
   category: z.string().min(2, 'at least 2 characters'),
   status: z.enum(['active', 'inactive']).default('inactive').optional(),
+  bannerImageUrl: z.string().url().optional(),
+  bannerImagePublicId: z.string().optional(),
   createdBy: z
     .string()
     .refine(val => Types.ObjectId.isValid(val), 'must be a valid MongoDB ObjectId')
@@ -16,7 +16,7 @@ export const bannerBaseSchema = z.object({
 })
 
 export const createBannerZodSchema = z.object({
-  body: bannerBaseSchema.partial(),
+  body: bannerBaseSchema,
 })
 
 export const updateBannerZodSchema = z.object({
