@@ -79,61 +79,61 @@ const getAllContact = async (
   }
 }
 
-const getAllContactWithCursor = async (filterOptions: ContactFilterOptions, cursorOptions: any) => {
-  const { searchTerm, ...filterData } = filterOptions
-  const { limit, cursor, direction } = cursorPagination(cursorOptions)
+// const getAllContactWithCursor = async (filterOptions: ContactFilterOptions, cursorOptions: any) => {
+//   const { searchTerm, ...filterData } = filterOptions
+//   const { limit, cursor, direction } = cursorPagination(cursorOptions)
 
-  const andConditions: Record<string, unknown>[] = []
+//   const andConditions: Record<string, unknown>[] = []
 
-  const searchableFields = ['name', 'email', 'phoneNumber', 'occupation', 'subject', 'message']
-  if (searchTerm) {
-    andConditions.push({
-      $or: searchableFields.map(field => ({
-        [field]: { $regex: searchTerm, $options: 'i' },
-      })),
-    })
-  }
+//   const searchableFields = ['name', 'email', 'phoneNumber', 'occupation', 'subject', 'message']
+//   if (searchTerm) {
+//     andConditions.push({
+//       $or: searchableFields.map(field => ({
+//         [field]: { $regex: searchTerm, $options: 'i' },
+//       })),
+//     })
+//   }
 
-  if (Object.keys(filterData).length) {
-    andConditions.push({
-      $and: Object.entries(filterData).map(([field, value]) => ({
-        [field]: value,
-      })),
-    })
-  }
+//   if (Object.keys(filterData).length) {
+//     andConditions.push({
+//       $and: Object.entries(filterData).map(([field, value]) => ({
+//         [field]: value,
+//       })),
+//     })
+//   }
 
-  // cursor-based pagination logic
-  if (cursor) {
-    if (direction === 'next') {
-      andConditions.push({ _id: { $lt: cursor } })
-    } else {
-      andConditions.push({ _id: { $gt: cursor } })
-    }
-  }
+//   // cursor-based pagination logic
+//   if (cursor) {
+//     if (direction === 'next') {
+//       andConditions.push({ _id: { $lt: cursor } })
+//     } else {
+//       andConditions.push({ _id: { $gt: cursor } })
+//     }
+//   }
 
-  const whereCondition = andConditions.length ? { $and: andConditions } : {}
+//   const whereCondition = andConditions.length ? { $and: andConditions } : {}
 
-  let contacts = await Contact.find(whereCondition)
-    .sort({ _id: direction === 'next' ? -1 : 1 })
-    .limit(limit)
+//   let contacts = await Contact.find(whereCondition)
+//     .sort({ _id: direction === 'next' ? -1 : 1 })
+//     .limit(limit)
 
-  if (direction === 'prev') {
-    contacts = contacts.reverse()
-  }
+//   if (direction === 'prev') {
+//     contacts = contacts.reverse()
+//   }
 
-  if (!contacts.length) {
-    throw new AppError(404, 'No contacts found')
-  }
+//   if (!contacts.length) {
+//     throw new AppError(404, 'No contacts found')
+//   }
 
-  return {
-    metaData: {
-      limit,
-      nextCursor: contacts[contacts.length - 1]?._id,
-      prevCursor: contacts[0]?._id,
-    },
-    data: contacts,
-  }
-}
+//   return {
+//     metaData: {
+//       limit,
+//       nextCursor: contacts[contacts.length - 1]?._id,
+//       prevCursor: contacts[0]?._id,
+//     },
+//     data: contacts,
+//   }
+// }
 
 const updateContact = async (id: string, data: UpdateContactInput) => {
   const contact = await Contact.findById(id)
@@ -160,7 +160,7 @@ export const contactService = {
   createContact,
   getContactById,
   getAllContact,
-  getAllContactWithCursor,
+  // getAllContactWithCursor,
   updateContact,
   deleteContact,
 }

@@ -33,18 +33,27 @@ const getContactById = catchAsync(async (req: Request, res: Response) => {
 const getAllContact = catchAsync(async (req: Request, res: Response) => {
   const filterOptions = req.query as ContactFilterOptions
   const paginationOptions = req.query as ContactPaginationOptions
-  const result = await contactService.getAllContactWithCursor(filterOptions, paginationOptions)
+  // const result = await contactService.getAllContactWithCursor(filterOptions, paginationOptions)
+  // sendResponse(res, {
+  //   statusCode: 200,
+  //   success: true,
+  //   message: 'Contacts retrieved successfully',
+  //   meta: {
+  //     limit: result.metaData.limit,
+  //     nextCursor: result.metaData?.nextCursor?.toString(),
+  //     prevCursor: result.metaData?.prevCursor?.toString(),
+  //     hasNextPage: !!result.metaData?.nextCursor,
+  //     hasPrevPage: !!result.metaData?.prevCursor,
+  //   },
+  //   data: result.data,
+  // })
+
+  const result = await contactService.getAllContact(filterOptions, paginationOptions)
   sendResponse(res, {
     statusCode: 200,
     success: true,
     message: 'Contacts retrieved successfully',
-    meta: {
-      limit: result.metaData.limit,
-      nextCursor: result.metaData?.nextCursor?.toString(),
-      prevCursor: result.metaData?.prevCursor?.toString(),
-      hasNextPage: !!result.metaData?.nextCursor,
-      hasPrevPage: !!result.metaData?.prevCursor,
-    },
+    meta: result.meta,
     data: result.data,
   })
 })
