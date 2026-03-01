@@ -1,7 +1,6 @@
-import { Schema, model } from 'mongoose'
-import { Banner } from './banner.interface'
+import { InferSchemaType, Schema, model } from 'mongoose'
 
-const bannerSchema = new Schema<Banner>(
+const bannerSchema = new Schema(
   {
     title: { type: String, required: true },
     description: { type: String, required: true },
@@ -22,6 +21,8 @@ const bannerSchema = new Schema<Banner>(
     timestamps: true,
   }
 )
+
+export type Banner = InferSchemaType<typeof bannerSchema>
 
 const BannerModel = model<Banner>('Banner', bannerSchema)
 

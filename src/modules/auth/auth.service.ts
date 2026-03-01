@@ -43,7 +43,7 @@ const loginUser = async (payload: LoginPayloadInput) => {
 
   const accessToken = jwtHelper.generateToken(
     {
-      userId: user._id,
+      id: user._id,
       role: user.role,
       email: user.email,
     },
@@ -53,7 +53,7 @@ const loginUser = async (payload: LoginPayloadInput) => {
 
   const refreshToken = jwtHelper.generateToken(
     {
-      userId: user._id,
+      id: user._id,
       role: user.role,
       email: user.email,
     },
@@ -77,18 +77,18 @@ const refreshToken = async (token: string) => {
     config.jwt.refreshSecret as Secret
   ) as JwtPayload
 
-  if (!verifiedToken.userId) {
+  if (!verifiedToken.id) {
     throw new AppError(401, 'Invalid refresh token')
   }
 
-  const user = await User.findById(verifiedToken.userId)
+  const user = await User.findById(verifiedToken.id)
   if (!user) {
     throw new AppError(404, 'User not found')
   }
 
   const accessToken = jwtHelper.generateToken(
     {
-      userId: user._id,
+      id: user._id,
       role: user.role,
       email: user.email,
     },

@@ -1,22 +1,21 @@
+import Contact from './contact.modal'
+import AppError from '../../errors/AppError'
+import pagination from '../../utils/pagination'
+import cursorPagination from '../../utils/cursorPagination'
 import {
   ContactFilterOptions,
   ContactPaginationOptions,
   CreateContactInput,
   UpdateContactInput,
-} from './contact.interface'
-import Contact from './contact.modal'
-import AppError from '../../errors/AppError'
-import pagination from '../../utils/pagination'
-import cursorPagination from '../../utils/cursorPagination'
+} from './contact.validation'
 
 const createContact = async (data: CreateContactInput) => {
-  const result = await new Contact(data)
-  await result.save()
+  const result = await Contact.create(data)
   return result
 }
 
 const getContactById = async (id: string) => {
-  const result = await Contact.findById(id)
+  const result = await Contact.findById(id).lean()
   if (!result) {
     throw new AppError(404, 'Contact not found')
   }
@@ -60,7 +59,8 @@ const getAllContact = async (
     Contact.find(whereCondition)
       .sort(sortCondition)
       .skip(skip as number)
-      .limit(limit as number),
+      .limit(limit as number)
+      .lean(),
 
     Contact.countDocuments(whereCondition),
   ])

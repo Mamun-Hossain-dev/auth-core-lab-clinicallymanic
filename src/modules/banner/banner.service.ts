@@ -1,56 +1,41 @@
+import { Types } from 'mongoose'
 import AppError from '../../errors/AppError'
 import { fileUploader } from '../../utils/fileUpload'
 import pagination from '../../utils/pagination'
-import { User } from '../user/user.model'
 import {
   BannerFilterOptions,
   BannerPaginationOptions,
   CreateBannerInput,
-  GetAllBannerInput,
   UpdateBannerInput,
-} from './banner.interface'
-import BannerModel from './banner.modal'
+} from './banner.validation'
+import BannerModel from './banner.model'
 
 const createBanner = async (
   userId: string,
   payload: CreateBannerInput,
   file: Express.Multer.File
 ) => {
-  const user = await User.findById(userId)
-  if (!user) {
-    throw new AppError(404, 'User not found')
-  }
-
   if (!file) {
     throw new AppError(400, 'Image file is required')
   }
 
-  if (file) {
-    const bannerFile = await fileUploader.uploadToCloudinary(file)
-    if (!bannerFile?.url) {
-      throw new AppError(500, 'Image upload failed')
-    }
-
-    payload.bannerImageUrl = bannerFile.url
-    payload.bannerImagePublicId = bannerFile.publicId
+  const bannerFile = await fileUploader.uploadToCloudinary(file)
+  if (!bannerFile?.url) {
+    throw new AppError(500, 'Image upload failed')
   }
 
-  const result = await new BannerModel({
+  const result = await BannerModel.create({
     ...payload,
-    createdBy: user._id,
+    bannerImageUrl: bannerFile.url,
+    bannerImagePublicId: bannerFile.publicId,
+    createdBy: new Types.ObjectId(userId),
   })
-
-  await result.save()
-
-  if (!result) {
-    throw new AppError(500, 'Failed to create banner')
-  }
 
   return result
 }
 
 const getBanner = async (id: string) => {
-  const banner = await BannerModel.findById(id)
+  const banner = await BannerModel.findById(id).lean()
   if (!banner) {
     throw new AppError(404, 'Banner not found')
   }
@@ -61,43 +46,36 @@ const getAllBanner = async (
   filterOptions: BannerFilterOptions,
   paginationOptions: BannerPaginationOptions
 ) => {
-  // filtering
   const { searchTerm, ...filterData } = filterOptions
-
-  // pagination
   const { page, limit, skip, sortBy, sortOrder } = pagination(paginationOptions)
 
-  const andCondition: Record<string, unknown>[] = []
+  const query: Record<string, any> = {}
 
-  const searchableFields = ['title', 'description', 'category']
   if (searchTerm) {
-    andCondition.push({
-      $or: searchableFields.map(field => ({
-        [field]: { $regex: searchTerm, $options: 'i' },
-      })),
-    })
+    const searchableFields = ['title', 'description', 'category']
+    query.$or = searchableFields.map(field => ({
+      [field]: { $regex: searchTerm, $options: 'i' },
+    }))
   }
 
-  if (Object.keys(filterData).length) {
-    andCondition.push({
-      $and: Object.entries(filterData).map(([field, value]) => ({
-        [field]: value,
-      })),
-    })
+  if (Object.keys(filterData).length > 0) {
+    query.$and = Object.entries(filterData).map(([field, value]) => ({
+      [field]: value,
+    }))
   }
 
-  const whereCondition = andCondition.length ? { $and: andCondition } : {}
   const sortCondition: Record<string, 1 | -1> = {}
   if (sortBy && sortOrder) {
     sortCondition[sortBy] = sortOrder === 'asc' ? 1 : -1
   }
 
   const [result, total] = await Promise.all([
-    BannerModel.find(whereCondition)
+    BannerModel.find(query)
       .sort(sortCondition)
       .skip(skip as number)
-      .limit(limit as number),
-    BannerModel.countDocuments(whereCondition),
+      .limit(limit as number)
+      .lean(),
+    BannerModel.countDocuments(query),
   ])
 
   return {
@@ -111,35 +89,45 @@ const updateBanner = async (
   file: Express.Multer.File,
   updateData: UpdateBannerInput
 ) => {
-  const banner = await BannerModel.findById(id).select('bannerImagePublicId')
+  const banner = await BannerModel.findById(id).select('bannerImagePublicId').lean()
   if (!banner) {
     throw new AppError(404, 'Banner not found')
   }
-  if (file && banner.bannerImagePublicId) {
-    await fileUploader.deleteFromCloudinary(banner.bannerImagePublicId)
+
+  let finalUpdateData = { ...updateData }
+
+  if (file) {
+    if (banner.bannerImagePublicId) {
+      await fileUploader.deleteFromCloudinary(banner.bannerImagePublicId)
+    }
+
     const bannerFile = await fileUploader.uploadToCloudinary(file)
     if (!bannerFile?.url) {
       throw new AppError(500, 'Image upload failed')
     }
-    updateData.bannerImageUrl = bannerFile?.url
-    updateData.bannerImagePublicId = bannerFile?.publicId
+    finalUpdateData.bannerImageUrl = bannerFile.url
+    finalUpdateData.bannerImagePublicId = bannerFile.publicId
   }
-  const updatedBanner = await BannerModel.findByIdAndUpdate(id, updateData, {
+
+  const updatedBanner = await BannerModel.findByIdAndUpdate(id, finalUpdateData, {
     new: true,
     runValidators: true,
-  })
+  }).lean()
+
   return updatedBanner
 }
 
 const deleteBanner = async (id: string) => {
-  const banner = await BannerModel.findById(id).select('bannerImagePublicId')
+  const banner = await BannerModel.findById(id).select('bannerImagePublicId').lean()
   if (!banner) {
     throw new AppError(404, 'Banner not found')
   }
+
   if (banner.bannerImagePublicId) {
     await fileUploader.deleteFromCloudinary(banner.bannerImagePublicId)
   }
-  return await banner.deleteOne()
+
+  return await BannerModel.findByIdAndDelete(id).lean()
 }
 
 export const BannerService = {

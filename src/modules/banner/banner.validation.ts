@@ -1,4 +1,3 @@
-import { fileUploader } from './../../utils/fileUpload'
 import { Types } from 'mongoose'
 import z from 'zod'
 
@@ -9,10 +8,6 @@ export const bannerBaseSchema = z.object({
   status: z.enum(['active', 'inactive']).default('inactive').optional(),
   bannerImageUrl: z.string().url().optional(),
   bannerImagePublicId: z.string().optional(),
-  createdBy: z
-    .string()
-    .refine(val => Types.ObjectId.isValid(val), 'must be a valid MongoDB ObjectId')
-    .optional(),
 })
 
 export const createBannerZodSchema = z.object({
@@ -54,3 +49,13 @@ export const getAllBannerQueryZodSchema = z.object({
     sortOrder: z.enum(['asc', 'desc']).optional(),
   }),
 })
+
+export type CreateBannerInput = z.infer<typeof createBannerZodSchema>['body']
+export type UpdateBannerInput = z.infer<typeof updateBannerZodSchema>['body']
+export type GetAllBannerQuery = z.infer<typeof getAllBannerQueryZodSchema>['query']
+
+export type BannerFilterOptions = Pick<GetAllBannerQuery, 'searchTerm' | 'category' | 'status'>
+export type BannerPaginationOptions = Pick<
+  GetAllBannerQuery,
+  'page' | 'limit' | 'sortBy' | 'sortOrder'
+>

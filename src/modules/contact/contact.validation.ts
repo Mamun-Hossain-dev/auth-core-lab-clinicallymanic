@@ -1,3 +1,4 @@
+import { getAllUsersZodSchema } from './../user/user.validation'
 import { Types } from 'mongoose'
 import z from 'zod'
 
@@ -12,7 +13,7 @@ export const ContactBaseSchema = z.object({
 })
 
 export const ContactCreateSchema = z.object({
-  body: ContactBaseSchema,
+  body: ContactBaseSchema.omit({ isRead: true }),
 })
 
 export const ContactGetByIdSchema = z.object({
@@ -43,3 +44,16 @@ export const ContactUpdateSchema = z.object({
     isRead: z.boolean().optional(),
   }),
 })
+
+export type CreateContactInput = z.infer<typeof ContactCreateSchema>['body']
+export type UpdateContactInput = z.infer<typeof ContactUpdateSchema>['body']
+export type GetAllContactInput = z.infer<typeof ContactGetAllSchema>['query']
+
+export type ContactFilterOptions = Pick<
+  GetAllContactInput,
+  'searchTerm' | 'name' | 'email' | 'isRead'
+>
+export type ContactPaginationOptions = Pick<
+  GetAllContactInput,
+  'page' | 'limit' | 'sortBy' | 'sortOrder'
+>

@@ -1,11 +1,11 @@
 import z from 'zod'
 import {
-  ChangePasswordZodSchema,
-  ForgotPasswordZodSchema,
-  LoginUserZodSchema,
-  RegisterUserZodSchema,
-  ResetPasswordZodSchema,
-  VerifyEmailZodSchema,
+    ChangePasswordZodSchema,
+    ForgotPasswordZodSchema,
+    LoginUserZodSchema,
+    RegisterUserZodSchema,
+    ResetPasswordZodSchema,
+    VerifyEmailZodSchema,
 } from './auth.validation'
 
 export type RegisterPayloadInput = z.infer<typeof RegisterUserZodSchema>['body']

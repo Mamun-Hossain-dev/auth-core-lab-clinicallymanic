@@ -1,7 +1,6 @@
-import { model, Schema } from 'mongoose'
-import { IContact } from './contact.interface'
+import { InferSchemaType, model, Schema } from 'mongoose'
 
-const contactSchema = new Schema<IContact>(
+const contactSchema = new Schema(
   {
     name: {
       type: String,
@@ -37,5 +36,7 @@ const contactSchema = new Schema<IContact>(
   }
 )
 
-const Contact = model<IContact>('Contact', contactSchema)
+export type Contact = InferSchemaType<typeof contactSchema>
+
+const Contact = model<Contact>('Contact', contactSchema)
 export default Contact

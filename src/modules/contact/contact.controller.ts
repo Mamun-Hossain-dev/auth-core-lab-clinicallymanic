@@ -6,7 +6,7 @@ import {
   ContactFilterOptions,
   ContactPaginationOptions,
   UpdateContactInput,
-} from './contact.interface'
+} from './contact.validation'
 
 const createContact = catchAsync(async (req: Request, res: Response) => {
   const data = req.body

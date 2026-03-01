@@ -4,10 +4,16 @@ import config from '../config'
 import AppError from '../errors/AppError'
 import catchAsync from '../utils/catchAsync'
 
+export interface ITokenUser extends JwtPayload {
+  id: string
+  role: string
+  email: string
+}
+
 declare global {
   namespace Express {
     interface Request {
-      user?: JwtPayload | null
+      user?: ITokenUser | null
     }
   }
 }
@@ -21,7 +27,7 @@ const auth = (...requiredRoles: string[]) => {
     }
 
     try {
-      const decoded = jwt.verify(token, config.jwt.accessSecret as string) as JwtPayload
+      const decoded = jwt.verify(token, config.jwt.accessSecret as string) as ITokenUser
 
       if (requiredRoles.length && !requiredRoles.includes(decoded.role)) {
         throw new AppError(403, 'You are not authorized to perform this action!')
