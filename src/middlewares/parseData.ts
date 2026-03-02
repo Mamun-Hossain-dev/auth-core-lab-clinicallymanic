@@ -11,3 +11,5 @@ const parseData = catchAsync(async (req, res, next) => {
   }
   next()
 })
+
+export default parseData

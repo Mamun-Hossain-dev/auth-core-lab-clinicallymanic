@@ -1,4 +1,3 @@
-import { getAllUsersZodSchema } from './../user/user.validation'
 import { Types } from 'mongoose'
 import z from 'zod'
 

@@ -57,3 +57,11 @@ export const ChangePasswordZodSchema = z.object({
     newPassword: z.string().min(6),
   }),
 })
+
+// DTO types derived from Zod schemas
+export type RegisterPayloadInput = z.infer<typeof RegisterUserZodSchema>['body']
+export type LoginPayloadInput = z.infer<typeof LoginUserZodSchema>['body']
+export type ForgotPasswordInput = z.infer<typeof ForgotPasswordZodSchema>['body']
+export type VerifyEmailInput = z.infer<typeof VerifyEmailZodSchema>['body']
+export type ResetPasswordInput = z.infer<typeof ResetPasswordZodSchema>['body']
+export type ChangePasswordInput = z.infer<typeof ChangePasswordZodSchema>

@@ -1,16 +1,21 @@
 import AppError from '../../errors/AppError'
 import { fileUploader } from '../../utils/fileUpload'
 import pagination from '../../utils/pagination'
-import { CreateUserInput, UserFilterOptions, UserPaginationOptions } from './user.interface'
+import {
+  CreateUserInput,
+  UpdateUserInput,
+  UserFilterOptions,
+  UserPaginationOptions,
+} from './user.validation'
 import { User } from './user.model'
 
-const createUser = async (payload: Partial<CreateUserInput>) => {
-  const user = await new User(payload)
-  return user.save()
+const createUser = async (payload: CreateUserInput) => {
+  const result = await User.create(payload)
+  return result
 }
 
 const getUserById = async (id: string) => {
-  const user = await User.findById(id)
+  const user = await User.findById(id).lean()
   if (!user) {
     throw new AppError(404, 'User not found')
   }
@@ -35,15 +40,6 @@ const getAllUsers = async (
     })
   }
 
-  // const searchFields = ['firstName', 'lastName', 'email', 'role']
-  // if (searchTerm) {
-  //   andCondition.push({
-  //     $or: searchFields.map(field => ({
-  //       [field]: { $regex: searchTerm, $options: 'i' },
-  //     })),
-  //   })
-  // }
-
   if (Object.keys(filterData).length) {
     andCondition.push({
       $and: Object.entries(filterData).map(([field, value]) => ({
@@ -66,7 +62,8 @@ const getAllUsers = async (
     User.find(whereCondition)
       .sort(sortCondition)
       .skip(skip as number)
-      .limit(limit as number),
+      .limit(limit as number)
+      .lean(),
 
     User.countDocuments(whereCondition),
   ])
@@ -87,13 +84,15 @@ const getAllUsers = async (
 
 const updateUserById = async (
   id: string,
-  updateData: Partial<CreateUserInput>,
+  updateData: UpdateUserInput,
   file?: Express.Multer.File
 ) => {
-  const existingUser = await User.findById(id).select('profileImage profileImagePublicId')
+  const existingUser = await User.findById(id).select('profileImage profileImagePublicId').lean()
   if (!existingUser) {
     throw new AppError(404, 'User not found')
   }
+
+  let finalUpdateData = { ...updateData }
 
   if (file) {
     const uploadedImage = await fileUploader.uploadToCloudinary(file)
@@ -102,8 +101,8 @@ const updateUserById = async (
       throw new AppError(500, 'Image upload failed')
     }
 
-    updateData.profileImage = uploadedImage.url
-    updateData.profileImagePublicId = uploadedImage.publicId
+    finalUpdateData.profileImage = uploadedImage.url
+    finalUpdateData.profileImagePublicId = uploadedImage.publicId
 
     // Delete old image from Cloudinary
     if (existingUser.profileImagePublicId) {
@@ -111,23 +110,23 @@ const updateUserById = async (
     }
   }
 
-  const updatedUser = await User.findByIdAndUpdate(id, updateData, {
+  const updatedUser = await User.findByIdAndUpdate(id, finalUpdateData, {
     new: true,
     runValidators: true,
-  })
+  }).lean()
 
   return updatedUser
 }
 
 const deleteUserById = async (id: string) => {
-  const user = await User.findById(id).select('profileImagePublicId')
+  const user = await User.findById(id).select('profileImagePublicId').lean()
   if (!user) {
     throw new AppError(404, 'User not found')
   }
   if (user.profileImagePublicId) {
     await fileUploader.deleteFromCloudinary(user.profileImagePublicId)
   }
-  return await user.deleteOne()
+  return await User.findByIdAndDelete(id).lean()
 }
 
 export const userService = {

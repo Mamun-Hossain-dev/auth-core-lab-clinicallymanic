@@ -1,7 +1,6 @@
-import Contact from './contact.modal'
+import ContactModel from './contact.modal'
 import AppError from '../../errors/AppError'
 import pagination from '../../utils/pagination'
-import cursorPagination from '../../utils/cursorPagination'
 import {
   ContactFilterOptions,
   ContactPaginationOptions,
@@ -10,12 +9,12 @@ import {
 } from './contact.validation'
 
 const createContact = async (data: CreateContactInput) => {
-  const result = await Contact.create(data)
+  const result = await ContactModel.create(data)
   return result
 }
 
 const getContactById = async (id: string) => {
-  const result = await Contact.findById(id).lean()
+  const result = await ContactModel.findById(id).lean()
   if (!result) {
     throw new AppError(404, 'Contact not found')
   }
@@ -56,111 +55,46 @@ const getAllContact = async (
   }
 
   const [contacts, total] = await Promise.all([
-    Contact.find(whereCondition)
+    ContactModel.find(whereCondition)
       .sort(sortCondition)
       .skip(skip as number)
       .limit(limit as number)
       .lean(),
 
-    Contact.countDocuments(whereCondition),
+    ContactModel.countDocuments(whereCondition),
   ])
 
-  if (!contacts.length) {
-    throw new AppError(404, 'No contacts found')
-  }
-
   return {
-    meta: {
-      page: page,
-      limit: limit,
-      total,
-    },
+    meta: { page, limit, total },
     data: contacts,
   }
 }
 
-// const getAllContactWithCursor = async (filterOptions: ContactFilterOptions, cursorOptions: any) => {
-//   const { searchTerm, ...filterData } = filterOptions
-//   const { limit, cursor, direction } = cursorPagination(cursorOptions)
-
-//   const andConditions: Record<string, unknown>[] = []
-
-//   const searchableFields = ['name', 'email', 'phoneNumber', 'occupation', 'subject', 'message']
-//   if (searchTerm) {
-//     andConditions.push({
-//       $or: searchableFields.map(field => ({
-//         [field]: { $regex: searchTerm, $options: 'i' },
-//       })),
-//     })
-//   }
-
-//   if (Object.keys(filterData).length) {
-//     andConditions.push({
-//       $and: Object.entries(filterData).map(([field, value]) => ({
-//         [field]: value,
-//       })),
-//     })
-//   }
-
-//   // cursor-based pagination logic
-//   if (cursor) {
-//     if (direction === 'next') {
-//       andConditions.push({ _id: { $lt: cursor } })
-//     } else {
-//       andConditions.push({ _id: { $gt: cursor } })
-//     }
-//   }
-
-//   const whereCondition = andConditions.length ? { $and: andConditions } : {}
-
-//   let contacts = await Contact.find(whereCondition)
-//     .sort({ _id: direction === 'next' ? -1 : 1 })
-//     .limit(limit)
-
-//   if (direction === 'prev') {
-//     contacts = contacts.reverse()
-//   }
-
-//   if (!contacts.length) {
-//     throw new AppError(404, 'No contacts found')
-//   }
-
-//   return {
-//     metaData: {
-//       limit,
-//       nextCursor: contacts[contacts.length - 1]?._id,
-//       prevCursor: contacts[0]?._id,
-//     },
-//     data: contacts,
-//   }
-// }
-
 const updateContact = async (id: string, data: UpdateContactInput) => {
-  const contact = await Contact.findById(id)
-  if (!contact) {
+  const updated = await ContactModel.findByIdAndUpdate(id, data, {
+    new: true,
+    runValidators: true,
+  }).lean()
+
+  if (!updated) {
     throw new AppError(404, 'Contact not found')
   }
-  if (data.isRead !== undefined) {
-    contact.isRead = data.isRead
-  }
-  await contact.save()
-  return contact
+
+  return updated
 }
 
 const deleteContact = async (id: string) => {
-  const contact = await Contact.findById(id)
-  if (!contact) {
+  const deleted = await ContactModel.findByIdAndDelete(id).lean()
+  if (!deleted) {
     throw new AppError(404, 'Contact not found')
   }
-  await contact.deleteOne()
-  return contact
+  return deleted
 }
 
 export const contactService = {
   createContact,
   getContactById,
   getAllContact,
-  // getAllContactWithCursor,
   updateContact,
   deleteContact,
 }

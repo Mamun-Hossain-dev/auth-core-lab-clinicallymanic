@@ -38,5 +38,5 @@ const contactSchema = new Schema(
 
 export type Contact = InferSchemaType<typeof contactSchema>
 
-const Contact = model<Contact>('Contact', contactSchema)
-export default Contact
+const ContactModel = model<Contact>('Contact', contactSchema)
+export default ContactModel

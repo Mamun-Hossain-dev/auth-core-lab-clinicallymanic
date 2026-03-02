@@ -6,7 +6,7 @@ import { jwtHelper } from '../../utils/jwtHelper'
 import { compareOtp, hashOtp } from '../../utils/otp'
 import sendMailer from '../../utils/sendMailer'
 import { User } from '../user/user.model'
-import { LoginPayloadInput, RegisterPayloadInput } from './auth.interface'
+import { LoginPayloadInput, RegisterPayloadInput } from './auth.validation'
 
 const registerUser = async (payload: RegisterPayloadInput) => {
   const existingUser = await User.findByEmail(payload.email)
@@ -16,11 +16,10 @@ const registerUser = async (payload: RegisterPayloadInput) => {
   }
 
   const idx = Math.floor(Math.random() * 1000)
-  const user = await new User({
+  const user = await User.create({
     ...payload,
     profileImage: `https://avatar.iran.liara.run/public/${idx}.png`,
   })
-  await user.save()
 
   return user
 }

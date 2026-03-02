@@ -1,5 +1,6 @@
 import express from 'express'
 import validateRequest from '../../middlewares/validateRequest'
+import parseData from '../../middlewares/parseData'
 import { userController } from './user.controller'
 import {
   createUserZodSchema,
@@ -28,10 +29,8 @@ router.patch(
   '/:id',
   auth(userRole.admin, userRole.user),
   fileUploader.upload.single('profileImage'),
-  // fileUploader.upload.array("images", 5),
-  validateRequest(getUserParamZodSchema),
+  parseData,
   validateRequest(updateUserZodSchema),
-  auth(userRole.admin, userRole.user),
   userController.updateUserById
 )
 

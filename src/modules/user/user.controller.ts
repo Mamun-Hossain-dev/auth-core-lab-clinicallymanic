@@ -1,8 +1,8 @@
 import { Request, Response } from 'express'
-import pick from '../../utils/pick'
 import catchAsync from '../../utils/catchAsync'
 import sendResponse from '../../utils/sendResponse'
 import { userService } from './user.service'
+import { UserFilterOptions, UserPaginationOptions } from './user.validation'
 
 const createUser = catchAsync(async (req: Request, res: Response) => {
   const result = await userService.createUser(req.body)
@@ -15,8 +15,8 @@ const createUser = catchAsync(async (req: Request, res: Response) => {
 })
 
 const getUserById = catchAsync(async (req: Request, res: Response) => {
-  const id = req.params.id as string
-  const result = await userService.getUserById(id)
+  const { id } = req.params
+  const result = await userService.getUserById(id as string)
   sendResponse(res, {
     statusCode: 200,
     success: true,
@@ -26,9 +26,8 @@ const getUserById = catchAsync(async (req: Request, res: Response) => {
 })
 
 const getAllUsers = catchAsync(async (req: Request, res: Response) => {
-  const filterOptions = pick(req.query, ['searchTerm', 'firstName', 'lastName', 'email', 'role'])
-
-  const paginationOptions = pick(req.query, ['page', 'limit', 'sortBy', 'sortOrder'])
+  const filterOptions = req.query as UserFilterOptions
+  const paginationOptions = req.query as UserPaginationOptions
 
   const result = await userService.getAllUsers(filterOptions, paginationOptions)
 
@@ -42,11 +41,10 @@ const getAllUsers = catchAsync(async (req: Request, res: Response) => {
 })
 
 const updateUserById = catchAsync(async (req: Request, res: Response) => {
-  const id = req.params.id as string
-  const imageFile = req.file
-  const updateData = req.body.data ? JSON.parse(req.body.data) : req.body
+  const { id } = req.params
+  const file = req.file as Express.Multer.File
 
-  const result = await userService.updateUserById(id, updateData, imageFile as Express.Multer.File)
+  const result = await userService.updateUserById(id as string, req.body, file)
 
   sendResponse(res, {
     statusCode: 200,
@@ -57,9 +55,9 @@ const updateUserById = catchAsync(async (req: Request, res: Response) => {
 })
 
 const deleteUserById = catchAsync(async (req: Request, res: Response) => {
-  const id = req.params.id as string
+  const { id } = req.params
 
-  const result = await userService.deleteUserById(id)
+  const result = await userService.deleteUserById(id as string)
 
   sendResponse(res, {
     statusCode: 200,

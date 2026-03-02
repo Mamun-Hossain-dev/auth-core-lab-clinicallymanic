@@ -64,3 +64,18 @@ export const updateUserPasswordZodSchema = z.object({
     newPassword: z.string().min(6, 'at least 6 characters'),
   }),
 })
+
+// DTO types derived from Zod schemas
+export type CreateUserInput = z.infer<typeof createUserZodSchema>['body']
+export type UpdateUserInput = z.infer<typeof updateUserZodSchema>['body']
+export type GetAllUsersInput = z.infer<typeof getAllUsersZodSchema>['query']
+export type UpdateUserPasswordInput = z.infer<typeof updateUserPasswordZodSchema>['body']
+
+export type UserFilterOptions = Pick<
+  GetAllUsersInput,
+  'searchTerm' | 'firstName' | 'lastName' | 'email' | 'role'
+>
+export type UserPaginationOptions = Pick<
+  GetAllUsersInput,
+  'page' | 'limit' | 'sortBy' | 'sortOrder'
+>

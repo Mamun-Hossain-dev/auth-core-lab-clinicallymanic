@@ -2,17 +2,12 @@ import { Request, Response } from 'express'
 import catchAsync from '../../utils/catchAsync'
 import { contactService } from './contact.service'
 import sendResponse from '../../utils/sendResponse'
-import {
-  ContactFilterOptions,
-  ContactPaginationOptions,
-  UpdateContactInput,
-} from './contact.validation'
+import { ContactFilterOptions, ContactPaginationOptions } from './contact.validation'
 
 const createContact = catchAsync(async (req: Request, res: Response) => {
-  const data = req.body
-  const result = await contactService.createContact(data)
+  const result = await contactService.createContact(req.body)
   sendResponse(res, {
-    statusCode: 200,
+    statusCode: 201,
     success: true,
     message: 'Contact created successfully',
     data: result,
@@ -20,7 +15,7 @@ const createContact = catchAsync(async (req: Request, res: Response) => {
 })
 
 const getContactById = catchAsync(async (req: Request, res: Response) => {
-  const { id } = req.params as { id: string }
+  const { id } = req.params
   const result = await contactService.getContactById(id)
   sendResponse(res, {
     statusCode: 200,
@@ -33,20 +28,6 @@ const getContactById = catchAsync(async (req: Request, res: Response) => {
 const getAllContact = catchAsync(async (req: Request, res: Response) => {
   const filterOptions = req.query as ContactFilterOptions
   const paginationOptions = req.query as ContactPaginationOptions
-  // const result = await contactService.getAllContactWithCursor(filterOptions, paginationOptions)
-  // sendResponse(res, {
-  //   statusCode: 200,
-  //   success: true,
-  //   message: 'Contacts retrieved successfully',
-  //   meta: {
-  //     limit: result.metaData.limit,
-  //     nextCursor: result.metaData?.nextCursor?.toString(),
-  //     prevCursor: result.metaData?.prevCursor?.toString(),
-  //     hasNextPage: !!result.metaData?.nextCursor,
-  //     hasPrevPage: !!result.metaData?.prevCursor,
-  //   },
-  //   data: result.data,
-  // })
 
   const result = await contactService.getAllContact(filterOptions, paginationOptions)
   sendResponse(res, {
@@ -59,9 +40,8 @@ const getAllContact = catchAsync(async (req: Request, res: Response) => {
 })
 
 const updateContact = catchAsync(async (req: Request, res: Response) => {
-  const { id } = req.params as { id: string }
-  const data = req.body as UpdateContactInput
-  const result = await contactService.updateContact(id, data)
+  const { id } = req.params
+  const result = await contactService.updateContact(id, req.body)
   sendResponse(res, {
     statusCode: 200,
     success: true,
@@ -71,7 +51,7 @@ const updateContact = catchAsync(async (req: Request, res: Response) => {
 })
 
 const deleteContact = catchAsync(async (req: Request, res: Response) => {
-  const { id } = req.params as { id: string }
+  const { id } = req.params
   const result = await contactService.deleteContact(id)
   sendResponse(res, {
     statusCode: 200,
