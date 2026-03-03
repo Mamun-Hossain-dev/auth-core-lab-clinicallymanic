@@ -4,6 +4,8 @@ import { userRoutes } from '../modules/user/user.routes'
 import { bannerRoutes } from '../modules/banner/banner.routes'
 import { contactRoutes } from '../modules/contact/contact.routes'
 import { eventRoutes } from '../modules/event/event.routes'
+import { newsletterRoutes } from '../modules/newsletter/newsletter.routes'
+import { offerRoutes } from '../modules/offer/offer.routes'
 
 const router = express.Router()
 
@@ -27,6 +29,14 @@ const moduleRoutes = [
   {
     path: '/events',
     route: eventRoutes,
+  },
+  {
+    path: '/newsletters',
+    route: newsletterRoutes,
+  },
+  {
+    path: '/offers',
+    route: offerRoutes,
   },
 ]
 
