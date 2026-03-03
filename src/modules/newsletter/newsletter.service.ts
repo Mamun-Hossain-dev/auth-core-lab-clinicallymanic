@@ -1,5 +1,4 @@
 import AppError from '../../errors/AppError'
-import pagination from '../../utils/pagination'
 import sendMailer from '../../utils/sendMailer'
 import NewsletterModel from './newsletter.model'
 import {
@@ -7,6 +6,7 @@ import {
   NewsletterFilterOptions,
   NewsletterPaginationOptions,
 } from './newsletter.validation'
+import queryHelper from '../../utils/queryHelper'
 
 const createNewsletter = async (payload: { email: string }) => {
   const isExist = await NewsletterModel.findOne({ email: payload.email }).lean()
@@ -21,28 +21,18 @@ const getAllNewsletter = async (
   filterOptions: NewsletterFilterOptions,
   paginationOptions: NewsletterPaginationOptions
 ) => {
-  const { searchTerm } = filterOptions
-  const { page, limit, skip, sortBy, sortOrder } = pagination(paginationOptions)
+  const { modelQuery, getMeta } = queryHelper(
+    NewsletterModel.find(),
+    { ...filterOptions, ...paginationOptions },
+    { searchableFields: ['email'] }
+  )
 
-  const query: Record<string, any> = {}
-
-  if (searchTerm) {
-    query.email = { $regex: searchTerm, $options: 'i' }
-  }
-
-  const sortCondition: Record<string, 1 | -1> = {}
-  if (sortBy && sortOrder) {
-    sortCondition[sortBy] = sortOrder === 'asc' ? 1 : -1
-  }
-
-  const [result, total] = await Promise.all([
-    NewsletterModel.find(query).sort(sortCondition).skip(skip).limit(limit).lean(),
-    NewsletterModel.countDocuments(query),
-  ])
+  const result = await modelQuery.lean()
+  const meta = await getMeta()
 
   return {
     data: result,
-    meta: { page, limit, total },
+    meta,
   }
 }
 

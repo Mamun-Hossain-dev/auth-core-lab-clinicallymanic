@@ -1,6 +1,6 @@
 import ContactModel from './contact.modal'
 import AppError from '../../errors/AppError'
-import pagination from '../../utils/pagination'
+import queryHelper from '../../utils/queryHelper'
 import {
   ContactFilterOptions,
   ContactPaginationOptions,
@@ -25,48 +25,20 @@ const getAllContact = async (
   filterOptions: ContactFilterOptions,
   paginationOptions: ContactPaginationOptions
 ) => {
-  const { searchTerm, ...filterData } = filterOptions
-  const { page, limit, skip, sortBy, sortOrder } = pagination(paginationOptions)
+  const { modelQuery, getMeta } = queryHelper(
+    ContactModel.find(),
+    { ...filterOptions, ...paginationOptions },
+    {
+      searchableFields: ['name', 'email', 'phoneNumber', 'occupation', 'subject', 'message'],
+    }
+  )
 
-  const andConditions: Record<string, unknown>[] = []
-
-  const searchableFields = ['name', 'email', 'phoneNumber', 'occupation', 'subject', 'message']
-  if (searchTerm) {
-    andConditions.push({
-      $or: searchableFields.map(field => ({
-        [field]: { $regex: searchTerm, $options: 'i' },
-      })),
-    })
-  }
-
-  if (Object.keys(filterData).length) {
-    andConditions.push({
-      $and: Object.entries(filterData).map(([field, value]) => ({
-        [field]: value,
-      })),
-    })
-  }
-
-  const whereCondition = andConditions.length ? { $and: andConditions } : {}
-
-  const sortCondition: Record<string, 1 | -1> = {}
-  if (sortBy && sortOrder) {
-    sortCondition[sortBy] = sortOrder === 'asc' ? 1 : -1
-  }
-
-  const [contacts, total] = await Promise.all([
-    ContactModel.find(whereCondition)
-      .sort(sortCondition)
-      .skip(skip as number)
-      .limit(limit as number)
-      .lean(),
-
-    ContactModel.countDocuments(whereCondition),
-  ])
+  const result = await modelQuery.lean()
+  const meta = await getMeta()
 
   return {
-    meta: { page, limit, total },
-    data: contacts,
+    data: result,
+    meta,
   }
 }
 

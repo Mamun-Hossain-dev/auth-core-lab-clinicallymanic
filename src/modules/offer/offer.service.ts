@@ -1,6 +1,5 @@
 import AppError from '../../errors/AppError'
 import { fileUploader } from '../../utils/fileUpload'
-import pagination from '../../utils/pagination'
 import OfferModel from './offer.model'
 import {
   CreateOfferInput,
@@ -8,6 +7,7 @@ import {
   OfferPaginationOptions,
   UpdateOfferInput,
 } from './offer.validation'
+import queryHelper from '../../utils/queryHelper'
 
 const createOffer = async (payload: CreateOfferInput, file?: Express.Multer.File) => {
   let thumbnail = payload.thumbnail
@@ -43,37 +43,18 @@ const getAllOffers = async (
   filterOptions: OfferFilterOptions,
   paginationOptions: OfferPaginationOptions
 ) => {
-  const { searchTerm, ...filterData } = filterOptions
-  const { page, limit, skip, sortBy, sortOrder } = pagination(paginationOptions)
+  const { modelQuery, getMeta } = queryHelper(
+    OfferModel.find(),
+    { ...filterOptions, ...paginationOptions },
+    { searchableFields: ['title', 'description'] }
+  )
 
-  const query: Record<string, any> = {}
-
-  if (searchTerm) {
-    const searchableFields = ['title', 'description']
-    query.$or = searchableFields.map(field => ({
-      [field]: { $regex: searchTerm, $options: 'i' },
-    }))
-  }
-
-  if (Object.keys(filterData).length > 0) {
-    query.$and = Object.entries(filterData).map(([field, value]) => ({
-      [field]: value,
-    }))
-  }
-
-  const sortCondition: Record<string, 1 | -1> = {}
-  if (sortBy && sortOrder) {
-    sortCondition[sortBy] = sortOrder === 'asc' ? 1 : -1
-  }
-
-  const [result, total] = await Promise.all([
-    OfferModel.find(query).sort(sortCondition).skip(skip).limit(limit).lean(),
-    OfferModel.countDocuments(query),
-  ])
+  const result = await modelQuery.lean()
+  const meta = await getMeta()
 
   return {
     data: result,
-    meta: { page, limit, total },
+    meta,
   }
 }
 

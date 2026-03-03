@@ -1,6 +1,5 @@
 import AppError from '../../errors/AppError'
 import { fileUploader } from '../../utils/fileUpload'
-import pagination from '../../utils/pagination'
 import {
   CreateUserInput,
   UpdateUserInput,
@@ -8,6 +7,7 @@ import {
   UserPaginationOptions,
 } from './user.validation'
 import { User } from './user.model'
+import queryHelper from '../../utils/queryHelper'
 
 const createUser = async (payload: CreateUserInput) => {
   const result = await User.create(payload)
@@ -26,59 +26,22 @@ const getAllUsers = async (
   filterOptions: UserFilterOptions,
   paginationOptions: UserPaginationOptions
 ) => {
-  // filtering
-  const { searchTerm, ...filterData } = filterOptions
+  const { modelQuery, getMeta } = queryHelper(
+    User.find(),
+    { ...filterOptions, ...paginationOptions },
+    { useTextSearch: true }
+  )
 
-  // pagination
-  const { page, limit, skip, sortBy, sortOrder } = pagination(paginationOptions)
+  const result = await modelQuery.lean()
+  const meta = await getMeta()
 
-  const andCondition: Record<string, unknown>[] = []
-
-  if (searchTerm) {
-    andCondition.push({
-      $text: { $search: searchTerm },
-    })
-  }
-
-  if (Object.keys(filterData).length) {
-    andCondition.push({
-      $and: Object.entries(filterData).map(([field, value]) => ({
-        [field]: value,
-      })),
-    })
-  }
-
-  const whereCondition = andCondition.length ? { $and: andCondition } : {}
-
-  const sortCondition: Record<string, 1 | -1> = {}
-
-  if (searchTerm) {
-    sortCondition.score = { $meta: 'textScore' } as any
-  } else if (sortBy && sortOrder) {
-    sortCondition[sortBy] = sortOrder === 'asc' ? 1 : -1
-  }
-
-  const [users, total] = await Promise.all([
-    User.find(whereCondition)
-      .sort(sortCondition)
-      .skip(skip as number)
-      .limit(limit as number)
-      .lean(),
-
-    User.countDocuments(whereCondition),
-  ])
-
-  if (users.length === 0) {
+  if (result.length === 0) {
     throw new AppError(404, 'No users found')
   }
 
   return {
-    data: users,
-    meta: {
-      total,
-      page,
-      limit,
-    },
+    data: result,
+    meta,
   }
 }
 

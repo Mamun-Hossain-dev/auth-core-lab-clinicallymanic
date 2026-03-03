@@ -1,7 +1,7 @@
 import { Types } from 'mongoose'
 import AppError from '../../errors/AppError'
 import { fileUploader } from '../../utils/fileUpload'
-import pagination from '../../utils/pagination'
+import queryHelper from '../../utils/queryHelper'
 import EventModel from './event.model'
 import {
     CreateEventInput,
@@ -43,53 +43,26 @@ const getAllEvent = async (
     paginationOptions: EventPaginationOptions
 ) => {
     const { searchTerm, startDate, endDate, ...filterData } = filterOptions
-    const { page, limit, skip, sortBy, sortOrder } = pagination(paginationOptions)
 
-    const andConditions: Record<string, unknown>[] = []
-
-    if (searchTerm) {
-        const searchableFields = ['title', 'description', 'location']
-        andConditions.push({
-            $or: searchableFields.map(field => ({
-                [field]: { $regex: searchTerm, $options: 'i' },
-            })),
-        })
-    }
-
-    if (Object.keys(filterData).length > 0) {
-        andConditions.push({
-            $and: Object.entries(filterData).map(([field, value]) => ({
-                [field]: value,
-            })),
-        })
-    }
+    const { modelQuery, getMeta } = queryHelper(
+        EventModel.find(),
+        { ...filterData, ...paginationOptions, searchTerm },
+        { searchableFields: ['title', 'description', 'location'] }
+    )
 
     if (startDate || endDate) {
         const dateCondition: Record<string, any> = {}
         if (startDate) dateCondition.$gte = startDate
         if (endDate) dateCondition.$lte = endDate
-        andConditions.push({ date: dateCondition })
+        modelQuery.find({ date: dateCondition })
     }
 
-    const whereCondition = andConditions.length > 0 ? { $and: andConditions } : {}
-
-    const sortCondition: Record<string, 1 | -1> = {}
-    if (sortBy && sortOrder) {
-        sortCondition[sortBy] = sortOrder === 'asc' ? 1 : -1
-    }
-
-    const [result, total] = await Promise.all([
-        EventModel.find(whereCondition)
-            .sort(sortCondition)
-            .skip(skip as number)
-            .limit(limit as number)
-            .lean(),
-        EventModel.countDocuments(whereCondition),
-    ])
+    const result = await modelQuery.lean()
+    const meta = await getMeta()
 
     return {
         data: result,
-        meta: { page, limit, total },
+        meta,
     }
 }
 
