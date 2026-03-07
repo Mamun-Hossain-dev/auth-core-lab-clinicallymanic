@@ -97,8 +97,7 @@ const deleteOffer = async (id: string) => {
     await fileUploader.deleteFromCloudinary(offer.thumbnailPublicId)
   }
 
-  const result = await OfferModel.findByIdAndDelete(id).lean()
-  return result
+  await OfferModel.findByIdAndDelete(id).lean()
 }
 
 export const OfferService = {

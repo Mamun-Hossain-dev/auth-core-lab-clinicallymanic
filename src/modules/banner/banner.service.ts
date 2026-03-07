@@ -104,7 +104,7 @@ const deleteBanner = async (id: string) => {
     await fileUploader.deleteFromCloudinary(banner.bannerImagePublicId)
   }
 
-  return await BannerModel.findByIdAndDelete(id).lean()
+  await BannerModel.findByIdAndDelete(id).lean()
 }
 
 export const BannerService = {

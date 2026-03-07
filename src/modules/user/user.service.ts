@@ -89,7 +89,7 @@ const deleteUserById = async (id: string) => {
   if (user.profileImagePublicId) {
     await fileUploader.deleteFromCloudinary(user.profileImagePublicId)
   }
-  return await User.findByIdAndDelete(id).lean()
+  await User.findByIdAndDelete(id).lean()
 }
 
 export const userService = {

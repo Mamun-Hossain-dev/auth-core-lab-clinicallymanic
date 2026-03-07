@@ -59,13 +59,13 @@ const updateOffer = catchAsync(async (req: Request, res: Response) => {
 
 const deleteOffer = catchAsync(async (req: Request, res: Response) => {
     const { id } = req.params as { id: string }
-    const result = await OfferService.deleteOffer(id)
+    await OfferService.deleteOffer(id)
 
     sendResponse(res, {
         statusCode: 200,
         success: true,
         message: 'Offer deleted successfully',
-        data: result,
+        data: null,
     })
 })
 

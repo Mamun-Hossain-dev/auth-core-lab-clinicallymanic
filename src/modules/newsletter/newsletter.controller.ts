@@ -44,13 +44,13 @@ const getSingleNewsletter = catchAsync(async (req: Request, res: Response) => {
 
 const deleteNewsletter = catchAsync(async (req: Request, res: Response) => {
     const { id } = req.params as { id: string }
-    const result = await NewsletterService.deleteNewsletter(id)
+    await NewsletterService.deleteNewsletter(id)
 
     sendResponse(res, {
         statusCode: 200,
         success: true,
         message: 'Newsletter subscription deleted successfully',
-        data: result,
+        data: null,
     })
 })
 

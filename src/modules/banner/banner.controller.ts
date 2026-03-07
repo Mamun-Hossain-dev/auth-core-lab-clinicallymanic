@@ -60,13 +60,13 @@ const updateBanner = catchAsync(async (req: Request, res: Response) => {
 
 const deleteBanner = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params
-  const result = await BannerService.deleteBanner(id as string)
+  await BannerService.deleteBanner(id as string)
 
   sendResponse(res, {
     statusCode: 200,
     success: true,
     message: 'Banner deleted successfully',
-    data: result,
+    data: null,
   })
 })
 

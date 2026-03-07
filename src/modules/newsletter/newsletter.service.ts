@@ -49,7 +49,6 @@ const deleteNewsletter = async (id: string) => {
   if (!result) {
     throw new AppError(404, 'Newsletter subscription not found')
   }
-  return result
 }
 
 const broadcastNewsletter = async (payload: BroadcastNewsletterInput) => {

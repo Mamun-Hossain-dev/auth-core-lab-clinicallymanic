@@ -60,13 +60,13 @@ const updateEvent = catchAsync(async (req: Request, res: Response) => {
 
 const deleteEvent = catchAsync(async (req: Request, res: Response) => {
     const { id } = req.params
-    const result = await EventService.deleteEvent(id as string)
+    await EventService.deleteEvent(id as string)
 
     sendResponse(res, {
         statusCode: 200,
         success: true,
         message: 'Event deleted successfully',
-        data: result,
+        data: null,
     })
 })
 

@@ -60,7 +60,6 @@ const deleteContact = async (id: string) => {
   if (!deleted) {
     throw new AppError(404, 'Contact not found')
   }
-  return deleted
 }
 
 export const contactService = {

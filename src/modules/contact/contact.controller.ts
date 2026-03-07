@@ -52,12 +52,12 @@ const updateContact = catchAsync(async (req: Request, res: Response) => {
 
 const deleteContact = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params as { id: string }
-  const result = await contactService.deleteContact(id)
+  await contactService.deleteContact(id)
   sendResponse(res, {
     statusCode: 200,
     success: true,
     message: 'Contact deleted successfully',
-    data: result,
+    data: null,
   })
 })
 

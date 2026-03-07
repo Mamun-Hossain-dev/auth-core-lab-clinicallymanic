@@ -105,7 +105,7 @@ const deleteEvent = async (id: string) => {
         await fileUploader.deleteFromCloudinary(event.thumbnailPublicId)
     }
 
-    return await EventModel.findByIdAndDelete(id).lean()
+    await EventModel.findByIdAndDelete(id).lean()
 }
 
 export const EventService = {
