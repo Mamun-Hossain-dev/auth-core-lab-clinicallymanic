@@ -14,16 +14,24 @@ import { fileUploader } from '../../utils/fileUpload'
 
 const router = express.Router()
 
+// auth BEFORE validateRequest → 401 Unauthorized before we even parse the body
 router.post(
   '/',
-  validateRequest(createUserZodSchema),
   auth(userRole.admin),
+  validateRequest(createUserZodSchema),
   userController.createUser
 )
 
-router.get('/:id', validateRequest(getUserParamZodSchema), userController.getUserById)
+// GET /:id — auth user or admin can fetch a profile (protect from public access)
+router.get(
+  '/:id',
+  auth(userRole.admin, userRole.user),
+  validateRequest(getUserParamZodSchema),
+  userController.getUserById
+)
 
-router.get('/', validateRequest(getAllUsersZodSchema), userController.getAllUsers)
+// GET / — only admin can list all users
+router.get('/', auth(userRole.admin), validateRequest(getAllUsersZodSchema), userController.getAllUsers)
 
 router.patch(
   '/:id',
@@ -34,6 +42,12 @@ router.patch(
   userController.updateUserById
 )
 
-router.delete('/:id', validateRequest(getUserParamZodSchema), userController.deleteUserById)
+// DELETE — only admin can soft-delete users
+router.delete(
+  '/:id',
+  auth(userRole.admin),
+  validateRequest(getUserParamZodSchema),
+  userController.deleteUserById
+)
 
 export const userRoutes = router

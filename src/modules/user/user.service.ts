@@ -15,7 +15,7 @@ const createUser = async (payload: CreateUserInput) => {
 }
 
 const getUserById = async (id: string) => {
-  const user = await User.findById(id).lean()
+  const user = await User.findOne({ _id: id, isDeleted: false }).lean()
   if (!user) {
     throw new AppError(404, 'User not found')
   }
@@ -27,7 +27,7 @@ const getAllUsers = async (
   paginationOptions: UserPaginationOptions
 ) => {
   const { modelQuery, getMeta } = queryHelper(
-    User.find(),
+    User.find({ isDeleted: false }),
     { ...filterOptions, ...paginationOptions },
     { useTextSearch: true }
   )
@@ -35,10 +35,7 @@ const getAllUsers = async (
   const result = await modelQuery.lean()
   const meta = await getMeta()
 
-  if (result.length === 0) {
-    throw new AppError(404, 'No users found')
-  }
-
+  // Empty list is a valid 200 — no 404 needed
   return {
     data: result,
     meta,
@@ -50,7 +47,9 @@ const updateUserById = async (
   updateData: UpdateUserInput,
   file?: Express.Multer.File
 ) => {
-  const existingUser = await User.findById(id).select('profileImage profileImagePublicId').lean()
+  const existingUser = await User.findOne({ _id: id, isDeleted: false })
+    .select('profileImage profileImagePublicId')
+    .lean()
   if (!existingUser) {
     throw new AppError(404, 'User not found')
   }
@@ -81,15 +80,13 @@ const updateUserById = async (
   return updatedUser
 }
 
+// Soft delete — mark isDeleted:true, keep profile image in Cloudinary
 const deleteUserById = async (id: string) => {
-  const user = await User.findById(id).select('profileImagePublicId').lean()
+  const user = await User.findOne({ _id: id, isDeleted: false }).lean()
   if (!user) {
     throw new AppError(404, 'User not found')
   }
-  if (user.profileImagePublicId) {
-    await fileUploader.deleteFromCloudinary(user.profileImagePublicId)
-  }
-  await User.findByIdAndDelete(id).lean()
+  await User.findByIdAndUpdate(id, { isDeleted: true })
 }
 
 export const userService = {

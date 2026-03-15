@@ -6,3 +6,4 @@ coverage
 .DS_Store
 *.log
 instruction.txt
+config.bat

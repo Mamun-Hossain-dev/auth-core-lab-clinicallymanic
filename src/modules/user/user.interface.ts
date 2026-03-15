@@ -17,6 +17,7 @@ export interface IUser {
     subscription?: Types.ObjectId
     profileImagePublicId?: string
     subscriptionExpiry?: Date | null
+    isDeleted?: boolean
     // instance methods
     isPasswordMatched(givenPassword: string): Promise<boolean>
 }
