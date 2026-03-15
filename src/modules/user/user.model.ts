@@ -49,6 +49,10 @@ const userSchema = new Schema<IUser>(
       type: Date,
       default: null,
     },
+    isDeleted: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,

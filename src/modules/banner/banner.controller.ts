@@ -61,13 +61,8 @@ const updateBanner = catchAsync(async (req: Request, res: Response) => {
 const deleteBanner = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params
   await BannerService.deleteBanner(id as string)
-
-  sendResponse(res, {
-    statusCode: 200,
-    success: true,
-    message: 'Banner deleted successfully',
-    data: null,
-  })
+  // 204 No Content — REST standard for successful delete
+  res.status(204).send()
 })
 
 export const BannerController = {

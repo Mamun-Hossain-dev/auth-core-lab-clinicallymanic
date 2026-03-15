@@ -25,6 +25,9 @@ const envSchema = z.object({
   RATE_LIMIT_WINDOW: z.coerce.number().default(900000), // 15 minutes
   RATE_LIMIT_MAX: z.coerce.number().default(100),
   COOKIE_SECRET: z.string().optional(),
+  // Comma-separated list of allowed origins for production CORS
+  // e.g. https://myapp.com,https://admin.myapp.com
+  ALLOWED_ORIGINS: z.string().optional(),
 })
 
 const parseEnv = envSchema.safeParse(process.env)
@@ -65,4 +68,8 @@ export default {
     max: envVars.RATE_LIMIT_MAX,
   },
   cookieSecret: envVars.COOKIE_SECRET,
+  // Parsed allowed origins array — used by production CORS
+  allowedOrigins: envVars.ALLOWED_ORIGINS
+    ? envVars.ALLOWED_ORIGINS.split(',').map(o => o.trim())
+    : [],
 }
